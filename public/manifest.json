@@ -1,0 +1,8 @@
+{
+  "name":"Fire System",
+  "short_name":"FireApp",
+  "start_url":"index.html",
+  "display":"standalone",
+  "background_color":"#0f172a",
+  "theme_color":"#ef4444"
+}
