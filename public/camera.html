@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Fire Detection</title>
+</head>
+
+<body style="background:black;color:white;text-align:center;">
+
+<h2>📷 AI Fire Detection</h2>
+
+<video id="video" width="100%" autoplay></video>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<script>
+const video = document.getElementById("video");
+
+// 📷 OPEN CAMERA
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+  video.srcObject = stream;
+});
+
+// 🎯 DETECTION
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+
+setInterval(() => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  ctx.drawImage(video, 0, 0);
+
+  const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = frame.data;
+
+  let firePixels = 0;
+
+  for(let i=0; i<data.length; i+=4){
+    let r = data[i];
+    let g = data[i+1];
+    let b = data[i+2];
+
+    if(r > 200 && g < 100 && b < 100){
+      firePixels++;
+    }
+  }
+
+  if(firePixels > 5000){
+    console.log("🔥 FIRE DETECTED!");
+
+    fetch("https://fire-sysem-1.onrender.com/send-sms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ lat: 0, lng: 0 })
+    });
+  }
+
+}, 3000);
+</script>
+
+</body>
+</html>
