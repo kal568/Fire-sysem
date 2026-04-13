@@ -9,12 +9,21 @@ app.use(express.json());
 const accountSid = "ACxxxxxxxxxxxxxxxxxxxx";
 const authToken = "xxxxxxxxxxxxxxxxxxxx";
 const client = require("twilio")(accountSid, authToken);
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+
+app.use(express.json());
+app.use(cors());
 
 // =======================
-// 🌐 CORS (IMPORTANT for frontend)
+// 🔥 TWILIO SETUP
 // =======================
-const cors = require("cors");
-app.use(cors());
+const accountSid = "ACxxxxxxxxxxxxxxxxxxxx";
+const authToken = "xxxxxxxxxxxxxxxxxxxx";
+
+const client = require("twilio")(accountSid, authToken);
 
 // =======================
 // 🏠 HOME ROUTE
@@ -31,7 +40,7 @@ app.post("/send-sms", async (req, res) => {
 
   // ✅ VALIDATION
   if (!lat || !lng) {
-    return res.status(400).send("❌ Missing location");
+    return res.status(400).send("❌ Missing location data");
   }
 
   try {
@@ -44,6 +53,7 @@ app.post("/send-sms", async (req, res) => {
     });
 
     console.log("✅ SMS sent:", message.sid);
+
     res.send("SMS Sent ✅");
 
   } catch (err) {
