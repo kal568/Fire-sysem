@@ -50,6 +50,11 @@
 <button onclick="getLocation()">📍 Get Location</button>
 <button onclick="manualFire()">🔥 Test Fire</button>
 
+<!-- 📊 HISTORY BUTTON -->
+<a href="history.html">
+  <button>📊 Fire History</button>
+</a>
+
 <iframe id="map"></iframe>
 
 <!-- 🔐 LOGIN PROTECTION -->
@@ -106,7 +111,7 @@ function getLocation(){
   }
 }
 
-// 🤖 AUTO DETECTION (fake for now)
+// 🤖 AUTO DETECTION
 setInterval(()=>{
   if(Math.random() < 0.05){
     sendFire("AUTO");

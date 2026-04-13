@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🔥 Fire History</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    .card {
+      background: #1e293b;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>🔥 Fire History</h2>
+
+<div id="list"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "fire-sysem.firebaseapp.com",
+  projectId: "fire-sysem"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const list = document.getElementById("list");
+
+onSnapshot(collection(db, "alerts"), snap => {
+  list.innerHTML = "";
+
+  snap.forEach(doc => {
+    const d = doc.data();
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      🔥 <b>Fire Detected</b><br>
+      📍 ${d.lat}, ${d.lng}<br>
+      🕒 ${new Date(d.time?.seconds * 1000).toLocaleString()}
+    `;
+
+    list.appendChild(div);
+  });
+});
+</script>
+
+</body>
+</html>
