@@ -50,12 +50,18 @@
 <button onclick="getLocation()">📍 Get Location</button>
 <button onclick="manualFire()">🔥 Test Fire</button>
 
-<!-- 📊 HISTORY BUTTON -->
 <a href="history.html">
   <button>📊 Fire History</button>
 </a>
 
 <iframe id="map"></iframe>
+
+<!-- 🔔 NOTIFICATION PERMISSION -->
+<script>
+if ("Notification" in window) {
+  Notification.requestPermission();
+}
+</script>
 
 <!-- 🔐 LOGIN PROTECTION -->
 <script type="module">
@@ -133,6 +139,13 @@ async function sendFire(type){
       type: type
     })
   });
+
+  // 🔔 NOTIFICATION
+  if (Notification.permission === "granted") {
+    new Notification("🔥 FIRE ALERT!", {
+      body: "Location: " + lat + ", " + lng
+    });
+  }
 
   alert("🔥 FIRE ALERT SENT!");
   statusBox.innerText = "🚨 Alert Sent";

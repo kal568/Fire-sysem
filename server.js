@@ -11,6 +11,12 @@ const authToken = "xxxxxxxxxxxxxxxxxxxx";
 const client = require("twilio")(accountSid, authToken);
 
 // =======================
+// 🌐 CORS (IMPORTANT for frontend)
+// =======================
+const cors = require("cors");
+app.use(cors());
+
+// =======================
 // 🏠 HOME ROUTE
 // =======================
 app.get("/", (req, res) => {
@@ -23,21 +29,21 @@ app.get("/", (req, res) => {
 app.post("/send-sms", async (req, res) => {
   const { lat, lng } = req.body;
 
-  // validation
+  // ✅ VALIDATION
   if (!lat || !lng) {
-    return res.status(400).send("Missing location ❌");
+    return res.status(400).send("❌ Missing location");
   }
 
   try {
     const time = new Date().toLocaleString();
 
-    await client.messages.create({
+    const message = await client.messages.create({
       body: `🔥 FIRE ALERT!\nTime: ${time}\nLocation: https://maps.google.com/?q=${lat},${lng}`,
-      from: "+1XXXXXXXXXX",
-      to: "+251XXXXXXXXX"
+      from: "+1XXXXXXXXXX",   // Twilio number
+      to: "+251XXXXXXXXX"     // Your phone
     });
 
-    console.log("✅ SMS sent");
+    console.log("✅ SMS sent:", message.sid);
     res.send("SMS Sent ✅");
 
   } catch (err) {
