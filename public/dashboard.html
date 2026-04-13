@@ -50,9 +50,30 @@
 <button onclick="getLocation()">📍 Get Location</button>
 <button onclick="manualFire()">🔥 Test Fire</button>
 
-<!-- 🗺️ SATELLITE MAP -->
 <iframe id="map"></iframe>
 
+<!-- 🔐 LOGIN PROTECTION -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "fire-sysem.firebaseapp.com",
+  projectId: "fire-sysem"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    location.href = "login.html";
+  }
+});
+</script>
+
+<!-- 🔥 MAIN SCRIPT -->
 <script>
 const video = document.getElementById("video");
 const statusBox = document.getElementById("status");
@@ -61,41 +82,38 @@ const map = document.getElementById("map");
 let lat = 0;
 let lng = 0;
 
-// 📷 CAMERA START
+// 📷 CAMERA
 navigator.mediaDevices.getUserMedia({ video: true })
 .then(stream => {
   video.srcObject = stream;
 })
 .catch(err => {
-  statusBox.innerText = "❌ Camera Error: " + err.message;
+  statusBox.innerText = "❌ Camera Error: " + err;
 });
 
-// 📍 GET LOCATION
+// 📍 LOCATION
 function getLocation(){
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(pos=>{
       lat = pos.coords.latitude;
       lng = pos.coords.longitude;
 
-      statusBox.innerText = `📍 Location: ${lat}, ${lng}`;
+      statusBox.innerText = `📍 ${lat}, ${lng}`;
 
-      // 🗺️ SATELLITE MAP
       map.src =
-        `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=18&output=embed`;
+        `https://maps.google.com/maps?q=${lat},${lng}&output=embed`;
     });
-  } else {
-    alert("Geolocation not supported");
   }
 }
 
-// 🤖 FAKE AI DETECTION
+// 🤖 AUTO DETECTION (fake for now)
 setInterval(()=>{
   if(Math.random() < 0.05){
     sendFire("AUTO");
   }
 }, 5000);
 
-// 🔥 FIRE ALERT
+// 🔥 SEND ALERT
 async function sendFire(type){
   statusBox.innerText = "🔥 FIRE DETECTED (" + type + ")";
 
@@ -107,7 +125,6 @@ async function sendFire(type){
     body: JSON.stringify({
       lat: lat,
       lng: lng,
-      source: "camera",
       type: type
     })
   });
@@ -116,10 +133,13 @@ async function sendFire(type){
   statusBox.innerText = "🚨 Alert Sent";
 }
 
-// 🧪 MANUAL TEST
+// 🧪 MANUAL
 function manualFire(){
   sendFire("MANUAL");
 }
+</script>
+
+<!-- 🤖 AI LIBRARY -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 
 </body>
