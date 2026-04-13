@@ -11,7 +11,7 @@ const authToken = "xxxxxxxxxxxxxxxxxxxx";
 const client = require("twilio")(accountSid, authToken);
 
 // =======================
-// 🏠 TEST ROUTE
+// 🏠 HOME ROUTE
 // =======================
 app.get("/", (req, res) => {
   res.send("🔥 Fire System Backend Running");
@@ -23,6 +23,11 @@ app.get("/", (req, res) => {
 app.post("/send-sms", async (req, res) => {
   const { lat, lng } = req.body;
 
+  // validation
+  if (!lat || !lng) {
+    return res.status(400).send("Missing location ❌");
+  }
+
   try {
     const time = new Date().toLocaleString();
 
@@ -32,9 +37,11 @@ app.post("/send-sms", async (req, res) => {
       to: "+251XXXXXXXXX"
     });
 
+    console.log("✅ SMS sent");
     res.send("SMS Sent ✅");
+
   } catch (err) {
-    console.error(err);
+    console.error("❌ SMS error:", err.message);
     res.status(500).send("SMS Error ❌");
   }
 });
