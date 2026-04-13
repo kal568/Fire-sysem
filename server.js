@@ -13,6 +13,8 @@ const client = require("twilio")(accountSid, authToken);
 // =======================
 // 🔥 FIREBASE ADMIN SDK
 // =======================
+const admin = require("firebase-admin");
+
 const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
@@ -38,9 +40,7 @@ app.post("/send-sms", async (req, res) => {
     const time = new Date().toLocaleString();
 
     await client.messages.create({
-      body: `🔥 FIRE ALERT!
-Time: ${time}
-Location: https://maps.google.com/?q=${lat},${lng}`,
+      body: `🔥 FIRE ALERT!\nTime: ${time}\nLocation: https://maps.google.com/?q=${lat},${lng}`,
       from: "+1XXXXXXXXXX",
       to: "+251XXXXXXXXX"
     });
@@ -53,15 +53,15 @@ Location: https://maps.google.com/?q=${lat},${lng}`,
 });
 
 // =======================
-// 🔴 REAL-TIME FIRE LISTENER (SERVER SIDE)
+// 🔴 REAL-TIME FIRE LISTENER
 // =======================
 let lastCount = 0;
 
 db.collection("alerts").onSnapshot(snapshot => {
-  console.log("🔥 Fire update received:", snapshot.size);
+  console.log("🔥 Fire update:", snapshot.size);
 
   if (snapshot.size > lastCount) {
-    console.log("🚨 NEW FIRE ALERT DETECTED!");
+    console.log("🚨 NEW FIRE ALERT!");
 
     snapshot.docChanges().forEach(async change => {
       if (change.type === "added") {
@@ -72,14 +72,12 @@ db.collection("alerts").onSnapshot(snapshot => {
 
           try {
             await client.messages.create({
-              body: `🔥 FIRE ALERT!
-Time: ${time}
-Location: https://maps.google.com/?q=${data.lat},${data.lng}`,
+              body: `🔥 FIRE ALERT!\nTime: ${time}\nLocation: https://maps.google.com/?q=${data.lat},${data.lng}`,
               from: "+1XXXXXXXXXX",
               to: "+251XXXXXXXXX"
             });
 
-            console.log("✅ SMS sent for new fire alert");
+            console.log("✅ SMS sent");
           } catch (err) {
             console.error("❌ SMS failed:", err);
           }
