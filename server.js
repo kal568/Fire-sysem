@@ -13,8 +13,6 @@ const client = require("twilio")(accountSid, authToken);
 // =======================
 // 🔥 FIREBASE ADMIN SDK
 // =======================
-const admin = require("firebase-admin");
-
 const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
