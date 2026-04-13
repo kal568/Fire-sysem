@@ -2,9 +2,9 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
-// 🔐 Twilio credentials
+// 🔐 Twilio credentials (REAL VALUES 넣)
 const accountSid = "ACxxxxxxxxxxxxxxxxxxxx";
-const authToken = "your_auth_token";
+const authToken = "xxxxxxxxxxxxxxxxxxxx";
 const client = require("twilio")(accountSid, authToken);
 
 // 🏠 Home route
@@ -24,7 +24,7 @@ app.post("/send-sms", async (req, res) => {
 Time: ${time}
 Location: https://maps.google.com/?q=${lat},${lng}`,
       from: "+1XXXXXXXXXX",   // Twilio number
-      to: "+251XXXXXXXXX"     // Your phone
+      to: "+251XXXXXXXXX"     // Your phone (verified)
     });
 
     res.send("SMS Sent ✅");
@@ -34,7 +34,7 @@ Location: https://maps.google.com/?q=${lat},${lng}`,
   }
 });
 
-// 🚀 Start server (FIXED FOR RENDER)
+// 🚀 Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
