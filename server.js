@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
-// 🔐 Twilio credentials (REAL VALUES 넣)
+// 🔐 Twilio credentials (REAL VALUES)
 const accountSid = "ACxxxxxxxxxxxxxxxxxxxx";
 const authToken = "xxxxxxxxxxxxxxxxxxxx";
 const client = require("twilio")(accountSid, authToken);
@@ -14,6 +14,8 @@ app.get("/", (req, res) => {
 
 // 📩 Send SMS endpoint
 app.post("/send-sms", async (req, res) => {
+  console.log("🔥 REQUEST:", req.body);
+
   const { lat, lng } = req.body;
 
   try {
@@ -29,7 +31,7 @@ Location: https://maps.google.com/?q=${lat},${lng}`,
 
     res.send("SMS Sent ✅");
   } catch (err) {
-    console.error(err);
+    console.error("❌ ERROR:", err);
     res.status(500).send("Error sending SMS ❌");
   }
 });
