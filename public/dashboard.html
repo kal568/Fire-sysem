@@ -1,161 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🔥 Fire Dashboard</title>
+  <title>🔥 AI Fire Detection</title>
 
   <style>
     body {
-      margin: 0;
-      font-family: Arial;
-      background: #020617;
+      background: black;
       color: white;
       text-align: center;
+      font-family: Arial;
+      margin: 0;
     }
 
     h2 {
-      font-size: 22px;
-      margin-top: 15px;
+      margin: 15px;
     }
 
-    #map {
-      height: 60vh;
+    video {
       width: 100%;
-      border: none;
+      max-height: 70vh;
+      background: #000;
     }
 
-    #history {
-      margin-top: 20px;
-      padding: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-      text-align: left;
-    }
-
-    .item {
-      background: #0f172a;
-      margin: 8px;
-      padding: 10px;
-      border-radius: 10px;
-      border-left: 4px solid red;
-    }
-
-    a {
-      color: #38bdf8;
-      text-decoration: none;
+    #status {
+      margin-top: 10px;
+      font-size: 18px;
     }
 
     button {
       padding: 10px;
-      margin: 5px;
-      font-size: 16px;
-      border-radius: 8px;
+      margin: 10px;
       border: none;
+      border-radius: 8px;
       background: red;
       color: white;
-      cursor: pointer;
+      font-size: 16px;
     }
   </style>
 </head>
 
 <body>
 
-<!-- 🔐 ADMIN LOGIN -->
+<h2>🔥 AI FIRE DETECTION CAMERA</h2>
+
+<video id="video" autoplay playsinline></video>
+
+<div id="status">🟢 System Ready</div>
+
+<button onclick="manualTest()">🔥 Test Fire Alert</button>
+
 <script>
-let password = prompt("Enter Admin Password:");
+const video = document.getElementById("video");
+const statusBox = document.getElementById("status");
 
-if(password !== "1234"){
-  document.body.innerHTML = "<h2>❌ Access Denied</h2>";
-  throw new Error("Unauthorized");
-}
-</script>
-
-<h2>🔥 LIVE FIRE DASHBOARD</h2>
-
-<iframe id="map"></iframe>
-
-<h3>📊 Fire History</h3>
-<div id="history"></div>
-
-<!-- 🔊 ALARM -->
-<audio id="alarm" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// 🔴 FIREBASE CONFIG (REPLACE THIS)
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "fire-sysem.firebaseapp.com",
-  projectId: "fire-sysem"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const alarm = document.getElementById("alarm");
-
-let lastCount = 0;
-
-// 🔥 LIVE FIRE UPDATES
-onSnapshot(collection(db,"alerts"), snap=>{
-  let markers = "";
-  let centerLat = 0;
-  let centerLng = 0;
-  let historyHTML = "";
-  let count = 0;
-
-  const docs = [];
-
-  snap.forEach(doc=>{
-    docs.push(doc.data());
-  });
-
-  docs.reverse();
-
-  docs.forEach(d=>{
-    if(d.lat && d.lng){
-      count++;
-
-      markers += `&markers=color:red%7C${d.lat},${d.lng}`;
-
-      centerLat = d.lat;
-      centerLng = d.lng;
-
-      historyHTML += `
-        <div class="item">
-          🔥 <b>FIRE ALERT</b><br>
-          📍 Lat: ${d.lat.toFixed(5)} <br>
-          📍 Lng: ${d.lng.toFixed(5)} <br>
-          🕒 ${
-            d.time
-              ? new Date(d.time.seconds ? d.time.seconds*1000 : d.time).toLocaleString()
-              : "N/A"
-          } <br>
-          <a href="https://maps.google.com/?q=${d.lat},${d.lng}" target="_blank">
-            🗺️ Open in Maps
-          </a>
-        </div>
-      `;
-    }
-  });
-
-  // 🗺️ MAP UPDATE
-  document.getElementById("map").src =
-    `https://maps.google.com/maps?q=${centerLat},${centerLng}&z=15&output=embed${markers}`;
-
-  // 🔊 ALARM (new alert detection)
-  if(count > lastCount){
-    alarm.pause();
-    alarm.currentTime = 0;
-    alarm.play().catch(()=>{});
-  }
-
-  lastCount = count;
-
-  // 📊 HISTORY UPDATE
-  document.getElementById("history").innerHTML = historyHTML;
+// 📷 OPEN CAMERA
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+  video.srcObject = stream;
+})
+.catch(err => {
+  statusBox.innerText = "❌ Camera Error: " + err.message;
 });
+
+// 🤖 SIMPLE AI DETECTION (demo simulation)
+let detectionActive = true;
+
+setInterval(() => {
+  if(!detectionActive) return;
+
+  // 🔥 fake AI detection trigger
+  if(Math.random() < 0.05){   // 5% chance every 5 sec
+    sendFire("AUTO");
+  }
+}, 5000);
+
+// 🔥 SEND FIRE ALERT
+async function sendFire(type){
+  try {
+    statusBox.innerText = "🔥 FIRE DETECTED (" + type + ")";
+
+    await fetch("https://fire-sysem-1.onrender.com/send-sms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        lat: 0,
+        lng: 0,
+        source: "camera",
+        type: type || "AUTO"
+      })
+    });
+
+    alert("🔥 FIRE ALERT SENT!");
+
+    statusBox.innerText = "🚨 Alert Sent Successfully";
+  }
+  catch (err) {
+    statusBox.innerText = "❌ Error sending alert";
+  }
+}
+
+// 🧪 MANUAL TEST BUTTON
+function manualTest(){
+  sendFire("MANUAL");
+}
 </script>
 
 </body>
