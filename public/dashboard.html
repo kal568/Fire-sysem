@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🔥 AI Fire Detection</title>
+  <title>🔥 AI Fire Detection + Map</title>
 
   <style>
     body {
@@ -12,48 +12,56 @@
       margin: 0;
     }
 
-    h2 {
-      margin: 15px;
-    }
-
     video {
       width: 100%;
-      max-height: 70vh;
-      background: #000;
+      max-height: 50vh;
     }
 
-    #status {
-      margin-top: 10px;
-      font-size: 18px;
+    #map {
+      width: 100%;
+      height: 40vh;
+      border: none;
     }
 
     button {
       padding: 10px;
-      margin: 10px;
+      margin: 8px;
       border: none;
       border-radius: 8px;
       background: red;
       color: white;
       font-size: 16px;
     }
+
+    #status {
+      margin: 10px;
+    }
   </style>
 </head>
 
 <body>
 
-<h2>🔥 AI FIRE DETECTION CAMERA</h2>
+<h2>🔥 AI FIRE DETECTION SYSTEM</h2>
 
 <video id="video" autoplay playsinline></video>
 
 <div id="status">🟢 System Ready</div>
 
-<button onclick="manualTest()">🔥 Test Fire Alert</button>
+<button onclick="getLocation()">📍 Get Location</button>
+<button onclick="manualFire()">🔥 Test Fire</button>
+
+<!-- 🗺️ SATELLITE MAP -->
+<iframe id="map"></iframe>
 
 <script>
 const video = document.getElementById("video");
 const statusBox = document.getElementById("status");
+const map = document.getElementById("map");
 
-// 📷 OPEN CAMERA
+let lat = 0;
+let lng = 0;
+
+// 📷 CAMERA START
 navigator.mediaDevices.getUserMedia({ video: true })
 .then(stream => {
   video.srcObject = stream;
@@ -62,47 +70,54 @@ navigator.mediaDevices.getUserMedia({ video: true })
   statusBox.innerText = "❌ Camera Error: " + err.message;
 });
 
-// 🤖 SIMPLE AI DETECTION (demo simulation)
-let detectionActive = true;
+// 📍 GET LOCATION
+function getLocation(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
 
-setInterval(() => {
-  if(!detectionActive) return;
+      statusBox.innerText = `📍 Location: ${lat}, ${lng}`;
 
-  // 🔥 fake AI detection trigger
-  if(Math.random() < 0.05){   // 5% chance every 5 sec
+      // 🗺️ SATELLITE MAP
+      map.src =
+        `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=18&output=embed`;
+    });
+  } else {
+    alert("Geolocation not supported");
+  }
+}
+
+// 🤖 FAKE AI DETECTION
+setInterval(()=>{
+  if(Math.random() < 0.05){
     sendFire("AUTO");
   }
 }, 5000);
 
-// 🔥 SEND FIRE ALERT
+// 🔥 FIRE ALERT
 async function sendFire(type){
-  try {
-    statusBox.innerText = "🔥 FIRE DETECTED (" + type + ")";
+  statusBox.innerText = "🔥 FIRE DETECTED (" + type + ")";
 
-    await fetch("https://fire-sysem-1.onrender.com/send-sms", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        lat: 0,
-        lng: 0,
-        source: "camera",
-        type: type || "AUTO"
-      })
-    });
+  await fetch("https://fire-sysem-1.onrender.com/send-sms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      lat: lat,
+      lng: lng,
+      source: "camera",
+      type: type
+    })
+  });
 
-    alert("🔥 FIRE ALERT SENT!");
-
-    statusBox.innerText = "🚨 Alert Sent Successfully";
-  }
-  catch (err) {
-    statusBox.innerText = "❌ Error sending alert";
-  }
+  alert("🔥 FIRE ALERT SENT!");
+  statusBox.innerText = "🚨 Alert Sent";
 }
 
-// 🧪 MANUAL TEST BUTTON
-function manualTest(){
+// 🧪 MANUAL TEST
+function manualFire(){
   sendFire("MANUAL");
 }
 </script>
