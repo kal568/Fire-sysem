@@ -1,7 +1,160 @@
-kk  });
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🔥 Fire Dashboard</title>
 
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #020617;
+      color: white;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-top: 15px;
+    }
+
+    #map {
+      height: 60vh;
+      width: 100%;
+      border: none;
+    }
+
+    #history {
+      margin-top: 20px;
+      padding: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .item {
+      background: #0f172a;
+      margin: 8px;
+      padding: 10px;
+      border-radius: 10px;
+      border-left: 4px solid red;
+    }
+
+    a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: red;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 🔐 ADMIN LOGIN -->
+<script>
+let password = prompt("Enter Admin Password:");
+
+if(password !== "1234"){
+  document.body.innerHTML = "<h2>❌ Access Denied</h2>";
+  throw new Error("Unauthorized");
+}
+</script>
+
+<h2>🔥 LIVE FIRE DASHBOARD</h2>
+
+<iframe id="map"></iframe>
+
+<h3>📊 Fire History</h3>
+<div id="history"></div>
+
+<!-- 🔊 ALARM -->
+<audio id="alarm" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔴 FIREBASE CONFIG (REPLACE THIS)
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "fire-sysem.firebaseapp.com",
+  projectId: "fire-sysem"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const alarm = document.getElementById("alarm");
+
+let lastCount = 0;
+
+// 🔥 LIVE FIRE UPDATES
+onSnapshot(collection(db,"alerts"), snap=>{
+  let markers = "";
+  let centerLat = 0;
+  let centerLng = 0;
+  let historyHTML = "";
+  let count = 0;
+
+  const docs = [];
+
+  snap.forEach(doc=>{
+    docs.push(doc.data());
+  });
+
+  docs.reverse();
+
+  docs.forEach(d=>{
+    if(d.lat && d.lng){
+      count++;
+
+      markers += `&markers=color:red%7C${d.lat},${d.lng}`;
+
+      centerLat = d.lat;
+      centerLng = d.lng;
+
+      historyHTML += `
+        <div class="item">
+          🔥 <b>FIRE ALERT</b><br>
+          📍 Lat: ${d.lat.toFixed(5)} <br>
+          📍 Lng: ${d.lng.toFixed(5)} <br>
+          🕒 ${
+            d.time
+              ? new Date(d.time.seconds ? d.time.seconds*1000 : d.time).toLocaleString()
+              : "N/A"
+          } <br>
+          <a href="https://maps.google.com/?q=${d.lat},${d.lng}" target="_blank">
+            🗺️ Open in Maps
+          </a>
+        </div>
+      `;
+    }
+  });
+
+  // 🗺️ MAP UPDATE
   document.getElementById("map").src =
-    `https://maps.google.com/maps?q=${center}&output=embed${markers}`;
+    `https://maps.google.com/maps?q=${centerLat},${centerLng}&z=15&output=embed${markers}`;
+
+  // 🔊 ALARM (new alert detection)
+  if(count > lastCount){
+    alarm.pause();
+    alarm.currentTime = 0;
+    alarm.play().catch(()=>{});
+  }
+
+  lastCount = count;
+
+  // 📊 HISTORY UPDATE
+  document.getElementById("history").innerHTML = historyHTML;
 });
 </script>
 

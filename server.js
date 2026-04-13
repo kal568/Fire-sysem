@@ -1,18 +1,20 @@
 const express = require("express");
-const http = require("http");
 const app = express();
 
 app.use(express.json());
 
-// 🔥 Twilio setup
+// =======================
+// 🔥 TWILIO SETUP
+// =======================
 const accountSid = "ACxxxxxxxxxxxxxxxxxxxx";
 const authToken = "xxxxxxxxxxxxxxxxxxxx";
 const client = require("twilio")(accountSid, authToken);
 
-// 🔥 Firebase Admin SDK (SERVER SIDE)
+// =======================
+// 🔥 FIREBASE ADMIN SDK
+// =======================
 const admin = require("firebase-admin");
 
-// 👉 serviceAccountKey.json must be downloaded from Firebase
 const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
@@ -21,12 +23,16 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// 🏠 Test route
+// =======================
+// 🏠 TEST ROUTE
+// =======================
 app.get("/", (req, res) => {
   res.send("🔥 Fire System Backend Running");
 });
 
-// 📩 Manual SMS endpoint (still usable)
+// =======================
+// 📩 MANUAL SMS ENDPOINT
+// =======================
 app.post("/send-sms", async (req, res) => {
   const { lat, lng } = req.body;
 
@@ -48,8 +54,9 @@ Location: https://maps.google.com/?q=${lat},${lng}`,
   }
 });
 
-
+// =======================
 // 🔴 REAL-TIME FIRE LISTENER (SERVER SIDE)
+// =======================
 let lastCount = 0;
 
 db.collection("alerts").onSnapshot(snapshot => {
@@ -74,7 +81,7 @@ Location: https://maps.google.com/?q=${data.lat},${data.lng}`,
               to: "+251XXXXXXXXX"
             });
 
-            console.log("✅ SMS sent for new fire");
+            console.log("✅ SMS sent for new fire alert");
           } catch (err) {
             console.error("❌ SMS failed:", err);
           }
@@ -86,8 +93,11 @@ Location: https://maps.google.com/?q=${data.lat},${data.lng}`,
   lastCount = snapshot.size;
 });
 
-// 🚀 Start server
+// =======================
+// 🚀 START SERVER
+// =======================
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+  console.log("🔥 Server running on port " + PORT);
 });
