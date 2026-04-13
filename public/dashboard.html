@@ -3,6 +3,9 @@
 <head>
   <title>🔥 AI Fire Detection + Map</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
   <style>
     body {
       background: black;
@@ -92,6 +95,7 @@ const map = document.getElementById("map");
 
 let lat = 0;
 let lng = 0;
+let sending = false;
 
 // 📷 CAMERA
 navigator.mediaDevices.getUserMedia({ video: true })
@@ -101,6 +105,11 @@ navigator.mediaDevices.getUserMedia({ video: true })
 .catch(err => {
   statusBox.innerText = "❌ Camera Error: " + err;
 });
+
+// 📍 AUTO LOCATION
+window.onload = () => {
+  getLocation();
+};
 
 // 📍 LOCATION
 function getLocation(){
@@ -126,34 +135,56 @@ setInterval(()=>{
 
 // 🔥 SEND ALERT
 async function sendFire(type){
-  statusBox.innerText = "🔥 FIRE DETECTED (" + type + ")";
 
-  await fetch("https://fire-sysem-1.onrender.com/send-sms", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      lat: lat,
-      lng: lng,
-      type: type
-    })
-  });
+  if(sending) return;
 
-  // 🔔 NOTIFICATION
-  if (Notification.permission === "granted") {
-    new Notification("🔥 FIRE ALERT!", {
-      body: "Location: " + lat + ", " + lng
-    });
+  if(lat === 0 || lng === 0){
+    alert("⚠️ Please get location first!");
+    return;
   }
 
-  alert("🔥 FIRE ALERT SENT!");
-  statusBox.innerText = "🚨 Alert Sent";
+  sending = true;
+  statusBox.innerText = "⏳ Sending alert...";
+  statusBox.style.color = "orange";
+
+  try {
+    await fetch("https://fire-sysem-1.onrender.com/send-sms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ lat, lng, type })
+    });
+
+    // 🔔 NOTIFICATION
+    if (Notification.permission === "granted") {
+      new Notification("🔥 FIRE ALERT!", {
+        body: "Location: " + lat + ", " + lng
+      });
+    }
+
+    alert("🔥 FIRE ALERT SENT!");
+    statusBox.innerText = "🚨 Alert Sent";
+    statusBox.style.color = "red";
+
+  } catch (err) {
+    alert("❌ Server Error!");
+    console.error(err);
+  }
+
+  sending = false;
 }
 
 // 🧪 MANUAL
 function manualFire(){
   sendFire("MANUAL");
+}
+
+// 📱 SERVICE WORKER REGISTER (PWA)
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("✅ SW Registered"))
+    .catch(err => console.log("❌ SW Error", err));
 }
 </script>
 
