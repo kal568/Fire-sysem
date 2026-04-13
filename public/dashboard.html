@@ -106,7 +106,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
   statusBox.innerText = "❌ Camera Error: " + err;
 });
 
-// 📍 AUTO LOCATION
+// 📍 AUTO LOAD LOCATION
 window.onload = () => {
   getLocation();
 };
@@ -128,6 +128,8 @@ function getLocation(){
 
 // 🤖 AI FIRE DETECTION
 function detectFire(){
+  if(!video.videoWidth) return false;
+
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
@@ -152,11 +154,10 @@ function detectFire(){
   }
 
   const percent = firePixels / (data.length / 4);
-
   return percent > 0.05;
 }
 
-// 🤖 AUTO AI DETECTION LOOP
+// 🤖 AUTO DETECTION LOOP
 setInterval(()=>{
   if(detectFire()){
     sendFire("AI");
@@ -210,7 +211,7 @@ function manualFire(){
   sendFire("MANUAL");
 }
 
-// 📱 SERVICE WORKER REGISTER
+// 📱 SERVICE WORKER
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js")
     .then(() => console.log("✅ SW Registered"))
